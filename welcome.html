@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GWM – Welcome Letter Generator</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #ffffff; --bg-secondary: #f5f5f3; --bg-info: #e6f1fb; --bg-success: #e1f5ee; --bg-warning: #faeeda;
+      --border: rgba(0,0,0,0.12); --border-hover: rgba(0,0,0,0.25); --border-strong: rgba(0,0,0,0.4);
+      --border-info: rgba(24,95,165,0.35); --border-success: rgba(15,110,86,0.4);
+      --text: #1a1a18; --text-secondary: #5f5e5a; --text-tertiary: #888780;
+      --text-info: #185fa5; --text-success: #0f6e56; --text-warning: #854f0b;
+      --pill-sel-bg: #e6f1fb; --pill-sel-border: rgba(24,95,165,0.35); --pill-sel-text: #185fa5;
+      --radius-md: 8px; --radius-lg: 12px;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #1e1e1c; --bg-secondary: #2a2a28; --bg-info: #0c2d4a; --bg-success: #04342c; --bg-warning: #412402;
+        --border: rgba(255,255,255,0.1); --border-hover: rgba(255,255,255,0.22); --border-strong: rgba(255,255,255,0.35);
+        --border-info: rgba(133,183,235,0.3); --border-success: rgba(93,202,165,0.3);
+        --text: #e8e6df; --text-secondary: #a8a69f; --text-tertiary: #6e6d69;
+        --text-info: #85b7eb; --text-success: #5dcaa5; --text-warning: #ef9f27;
+        --pill-sel-bg: #0c2d4a; --pill-sel-border: rgba(133,183,235,0.35); --pill-sel-text: #85b7eb;
+      }
+    }
+    body { font-family: 'IBM Plex Sans', sans-serif; background: var(--bg-secondary); color: var(--text); min-height: 100vh; padding: 2rem 1rem 4rem; }
+    .app { max-width: 740px; margin: 0 auto; background: var(--bg); border-radius: var(--radius-lg); border: 0.5px solid var(--border); padding: 2rem 1.75rem 2.5rem; }
+    .header { display: flex; align-items: center; gap: 12px; margin-bottom: 1.75rem; padding-bottom: 1.25rem; border-bottom: 0.5px solid var(--border); }
+    .header-icon { width: 36px; height: 36px; background: var(--bg-info); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .header-icon svg { width: 18px; height: 18px; stroke: var(--text-info); }
+    .header-text h1 { font-size: 16px; font-weight: 500; color: var(--text); letter-spacing: -0.01em; }
+    .header-text p { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+    .section { border: 0.5px solid var(--border); border-radius: var(--radius-md); margin-bottom: 1rem; overflow: hidden; }
+    .section-header { display: flex; align-items: center; gap: 10px; padding: 11px 14px; background: var(--bg-secondary); border-bottom: 0.5px solid var(--border); }
+    .section-num { font-size: 11px; font-weight: 500; color: var(--text-info); background: var(--bg-info); border: 0.5px solid var(--border-info); border-radius: 5px; padding: 2px 7px; flex-shrink: 0; }
+    .section-title { font-size: 13px; font-weight: 500; color: var(--text); }
+    .section-badge { font-size: 10px; font-weight: 500; padding: 2px 7px; border-radius: 10px; margin-left: auto; flex-shrink: 0; }
+    .badge-always { background: var(--bg-success); color: var(--text-success); border: 0.5px solid var(--border-success); }
+    .badge-if { background: var(--bg-warning); color: var(--text-warning); border: 0.5px solid rgba(133,79,11,0.3); }
+    .section-body { padding: 14px; }
+    .pill-group { display: flex; flex-wrap: wrap; gap: 6px; }
+    .pill { background: var(--bg-secondary); border: 0.5px solid var(--border); border-radius: 20px; padding: 5px 13px; font-family: 'IBM Plex Sans', sans-serif; font-size: 13px; color: var(--text-secondary); cursor: pointer; transition: all 0.12s; }
+    .pill:hover { border-color: var(--border-hover); color: var(--text); }
+    .pill.selected { background: var(--pill-sel-bg); border-color: var(--pill-sel-border); color: var(--pill-sel-text); font-weight: 500; }
+    .form-input, .form-textarea { width: 100%; background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-md); padding: 9px 12px; font-family: 'IBM Plex Sans', sans-serif; font-size: 14px; color: var(--text); outline: none; transition: border-color 0.15s; }
+    .form-input:focus, .form-textarea:focus { border-color: var(--border-strong); }
+    .form-textarea { resize: vertical; min-height: 60px; line-height: 1.5; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .fill-block { margin-top: 12px; padding: 12px; background: var(--bg-secondary); border-radius: var(--radius-md); border: 0.5px solid var(--border); display: none; }
+    .fill-block.visible { display: block; }
+    .fill-label { font-size: 11px; font-weight: 500; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; display: block; }
+    .fill-group { margin-bottom: 10px; }
+    .fill-group:last-child { margin-bottom: 0; }
+    .fill-hint { font-size: 12px; color: var(--text-tertiary); font-style: italic; margin-top: 3px; }
+    .multi-label { font-size: 12px; color: var(--text-tertiary); margin-bottom: 6px; }
+    .divider { height: 0.5px; background: var(--border); margin: 1.25rem 0; }
+    .step-label { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-tertiary); margin-bottom: 1rem; }
+    .generate-btn { width: 100%; background: var(--text); color: var(--bg); border: none; border-radius: var(--radius-md); padding: 13px; font-family: 'IBM Plex Sans', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; margin-top: 1.5rem; transition: opacity 0.15s; }
+    .generate-btn:hover { opacity: 0.82; }
+    .output-box { display: none; margin-top: 1.5rem; border: 0.5px solid var(--border); border-radius: var(--radius-md); overflow: hidden; }
+    .output-box.visible { display: block; }
+    .output-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: var(--bg-secondary); border-bottom: 0.5px solid var(--border); }
+    .output-label { font-size: 11px; font-weight: 500; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.07em; }
+    .copy-btn { background: none; border: 0.5px solid var(--border); border-radius: 6px; padding: 4px 11px; font-family: 'IBM Plex Sans', sans-serif; font-size: 12px; color: var(--text-secondary); cursor: pointer; transition: all 0.12s; }
+    .copy-btn:hover { border-color: var(--border-hover); color: var(--text); }
+    .copy-btn.copied { color: var(--text-success); border-color: var(--border-success); }
+    .output-text { padding: 16px; font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: var(--text); line-height: 1.9; white-space: pre-wrap; word-break: break-word; }
+    .reset-btn { width: 100%; background: none; border: 0.5px solid var(--border); border-radius: var(--radius-md); padding: 10px; font-family: 'IBM Plex Sans', sans-serif; font-size: 13px; color: var(--text-secondary); cursor: pointer; margin-top: 0.75rem; transition: all 0.15s; }
+    .reset-btn:hover { border-color: var(--border-hover); color: var(--text); }
+    @media (max-width: 520px) { .app { padding: 1.25rem 1rem 2rem; } .form-row { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <div class="header">
+    <div class="header-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+      </svg>
+    </div>
+    <div class="header-text">
+      <h1>GWM – Welcome Letter Generator</h1>
+      <p>Select sections, fill in the blanks, generate and paste into Clio</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num" style="background:var(--bg-warning);color:var(--text-warning);border-color:rgba(133,79,11,0.3);">PMM</span>
+      <span class="section-title">Note for Paula (PMM)</span>
+    </div>
+    <div class="section-body">
+      <textarea class="form-textarea" id="pmm_note" placeholder="e.g. Please send welcome letter using sections below, upload signed retainer to file, calendar court date for May 15..." style="min-height:65px"></textarea>
+    </div>
+  </div>
+
+  <!-- §1 -->
+  <div class="section">
+    <div class="section-header"><span class="section-num">§1</span><span class="section-title">New or returning client?</span><span class="section-badge badge-always">Always</span></div>
+    <div class="section-body">
+      <div class="pill-group">
+        <button class="pill" onclick="pick(this,'s1','1A')">New client (1A)</button>
+        <button class="pill" onclick="pick(this,'s1','1B')">Returning client (1B)</button>
+      </div>
+      <input type="hidden" id="s1" />
+    </div>
+  </div>
+
+  <!-- §3 -->
+  <div class="section">
+    <div class="section-header"><span class="section-num">§3</span><span class="section-title">Test type / refusal</span><span class="section-badge badge-always">Always</span></div>
+    <div class="section-body">
+      <div class="pill-group">
+        <button class="pill" onclick="pick(this,'s3','3A'); showFill('fill-s3','test_type')">Breath (3A)</button>
+        <button class="pill" onclick="pick(this,'s3','3A'); showFill('fill-s3','test_type')">Blood (3A)</button>
+        <button class="pill" onclick="pick(this,'s3','3A'); showFill('fill-s3','test_type')">Urine (3A)</button>
+        <button class="pill" onclick="pick(this,'s3','3B'); showFill('fill-s3','test_type')">Refused (3B)</button>
+      </div>
+      <div class="fill-block" id="fill-s3">
+        <div class="fill-group">
+          <label class="fill-label">Test type (for letter blank)</label>
+          <input class="form-input" id="test_type" placeholder="e.g. breath, blood, urine" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- §4 -->
+  <div class="section">
+    <div class="section-header"><span class="section-num">§4</span><span class="section-title">Did client arrange an additional independent test?</span><span class="section-badge badge-if">If applicable</span></div>
+    <div class="section-body">
+      <div class="pill-group">
+        <button class="pill" onclick="pick(this,'s4','4'); showFill('fill-s4')">Yes – include §4</button>
+        <button class="pill" onclick="pick(this,'s4',''); hideFill('fill-s4')">No – skip</button>
+      </div>
+      <div class="fill-block" id="fill-s4">
+        <div class="fill-group">
+          <label class="fill-label">Additional test type</label>
+          <input class="form-input" id="add_test_type" placeholder="e.g. blood, breath, urine" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- §5 -->
+  <div class="section">
+    <div class="section-header"><span class="section-num">§5</span><span class="section-title">Did client submit a test with result under .08?</span><span class="section-badge badge-if">If applicable</span></div>
+    <div class="section-body">
+      <div class="pill-group">
+        <button class="pill" onclick="pick(this,'s5','5')">Yes – include §5</button>
+        <button class="pill" onclick="pick(this,'s5','')">No – skip</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- §6 -->
+  <div class="section">
+    <div class="section-header"><span class="section-num">§6</span><span class="section-title">Charges and court date status</span><span class="section-badge badge-always">Always</span></div>
+    <div class="section-body">
+      <div class="pill-group">
+        <button class="pill" onclick="pick(this,'s6','6A'); hideFill('fill-s6')">Not yet charged (6A)</button>
+        <button class="pill" onclick="pick(this,'s6','6B'); hideFill('fill-s6')">Charged, no court date yet (6B)</button>
+        <button class="pill" onclick="pick(this,'s6','6C'); showFill('fill-s6')">Has upcoming court date (6C)</button>
+        <button class="pill" onclick="pick(this,'s6','6D'); showFill('fill-s6')">Already had hearing, new date set (6D)</button>
+      </div>
+      <div class="fill-block" id="fill-s6">
+        <div class="form-row">
+          <div class="fill-group">
+            <label class="fill-label">Appearance type</label>
+            <input class="form-input" id="appearance_type" placeholder="e.g. Arraignment, Pretrial" />
+          </div>
+          <div class="fill-group">
+            <label class="fill-label">Time</label>
+            <input class="form-input" id="appearance_time" placeholder="e.g. 9:00 AM" />
+          </div>
+        </div>
+        <div class="fill-group" style="margin-top:10px">
+          <label class="fill-label">Courthouse name</label>
+          <input class="form-input" id="courthouse" placeholder="e.g. Hennepin County Government Center" />
+        </div>
+        <div class="fill-group" style="margin-top:10px">
+          <label class="fill-label">Courthouse address</label>
+          <input class="form-input" id="courthouse_addr" placeholder="e.g. 300 S 6th St, Minneapolis, MN 55487" />
+        </div>
+        <div class="fill-group" style="margin-top:10px">
+          <label class="fill-label">Courthouse phone</label>
+          <input class="form-input" id="courthouse_phone" placeholder="e.g. 612-348-3000" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- §7 -->
+  <div class="section">
+    <div class="section-header"><span class="section-num">§7</span><span class="section-title">Is client required to appear?</span><span class="section-badge badge-always">Always</span></div>
+    <div class="section-body">
+      <div class="pill-group">
+        <button class="pill" onclick="pick(this,'s7','7A'); showFill('fill-s7a'); hideFill('fill-s7b')">Yes – in person (7A)</button>
+        <button class="pill" onclick="pick(this,'s7','7B'); showFill('fill-s7b'); hideFill('fill-s7a')">Yes – Zoom/virtual (7B)</button>
+        <button class="pill" onclick="pick(this,'s7','7C'); hideFill('fill-s7a'); hideFill('fill-s7b')">No longer applicable (7C)</button>
+        <button class="pill" onclick="pick(this,'s7','7D'); hideFill('fill-s7a'); hideFill('fill-s7b')">No – consent to arraignment sent (7D)</button>
+        <button class="pill" onclick="pick(this,'s7','7E'); hideFill('fill-s7a'); hideFill('fill-s7b')">No court date yet – will handle (7E)</button>
+      </div>
+      <div class="fill-block" id="fill-s7a">
+        <div class="fill-group">
+          <label class="fill-label">Court date for appearance</label>
+          <input class="form-input" id="appearance_date_7a" placeholder="e.g. May 15, 2026" />
+        </div>
+      </div>
+      <div class="fill-block" id="fill-s7b">
+        <div class="fill-group">
+          <label class="fill-label">Court date for Zoom appearance</label>
+          <input class="form-input" id="appearance_date_7b" placeholder="e.g. May 15, 2026" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- §8 -->
+  <div class="section">
+    <div class="section-header"><span class="section-num">§8</span><span class="section-title">Bail / release status</span><span class="section-badge badge-always">Always</span></div>
+    <div class="section-body">
+      <div class="pill-group">
+        <button class="pill" onclick="pick(this,'s8','8A'); hideFill('fill-s8d'); hideFill('fill-s8e')">Max bail, none posted (8A)</button>
+        <button class="pill" onclick="pick(this,'s8','8B'); hideFill('fill-s8d'); hideFill('fill-s8e')">No bail, no conditions (8B)</button>
+        <button class="pill" onclick="pick(this,'s8','8C'); hideFill('fill-s8d'); hideFill('fill-s8e')">Unconditional bail posted (8C)</button>
+        <button class="pill" onclick="pick(this,'s8','8D'); showFill('fill-s8d'); hideFill('fill-s8e')">Conditional release (8D)</button>
+        <button class="pill" onclick="pick(this,'s8','8E'); hideFill('fill-s8d'); showFill('fill-s8e')">Bail + conditions (8E)</button>
+      </div>
+      <div class="fill-block" id="fill-s8d">
+        <div class="fill-group">
+          <label class="fill-label">Conditions of release (8D)</label>
+          <textarea class="form-textarea" id="conditions_8d" placeholder="e.g. No alcohol, random UA testing, no new charges..."></textarea>
+        </div>
+      </div>
+      <div class="fill-block" id="fill-s8e">
+        <div class="fill-group">
+          <label class="fill-label">Conditions of release (8E)</label>
+          <textarea class="form-textarea" id="conditions_8e" placeholder="e.g. No alcohol, random UA testing, must appear at all court dates..."></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- §9 -->
+  <div class="section">
+    <div class="section-header"><span class="section-num">§9</span><span class="section-title">Address concern?</span><span class="section-badge badge-if">If applicable</span></div>
+    <div class="section-body">
+      <div class="pill-group">
+        <button class="pill" onclick="pick(this,'s9','9')">Yes – include §9</button>
+        <button class="pill" onclick="pick(this,'s9','')">No – skip</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- §10 -->
+  <div class="section">
+    <div class="section-header"><span class="section-num">§10</span><span class="section-title">License / DVS situation</span><span class="section-badge badge-always">Always</span></div>
+    <div class="section-body">
+      <div class="pill-group">
+        <button class="pill" onclick="pick(this,'s10','10A'); showFill('fill-s10-revo'); hideFill('fill-s10-cancel'); hideFill('fill-s10-atty')">Revocation only, no W plates (10A)</button>
+        <button class="pill" onclick="pick(this,'s10','10B'); showFill('fill-s10-revo'); hideFill('fill-s10-cancel'); hideFill('fill-s10-atty')">Revocation + W plates (10B)</button>
+        <button class="pill" onclick="pick(this,'s10','10C'); showFill('fill-s10-cancel'); hideFill('fill-s10-revo'); hideFill('fill-s10-atty')">Canceled and denied (10C)</button>
+        <button class="pill" onclick="pick(this,'s10','10D'); showFill('fill-s10-revo'); hideFill('fill-s10-cancel'); hideFill('fill-s10-atty')">Ramsey/Hennepin/1st Dist – no W plates (10D)</button>
+        <button class="pill" onclick="pick(this,'s10','10E'); showFill('fill-s10-revo'); hideFill('fill-s10-cancel'); hideFill('fill-s10-atty')">Ramsey/Hennepin/1st Dist – W plates (10E)</button>
+        <button class="pill" onclick="pick(this,'s10','10F'); hideFill('fill-s10-revo'); hideFill('fill-s10-cancel'); hideFill('fill-s10-atty')">Blood test – BCA pending (10F)</button>
+        <button class="pill" onclick="pick(this,'s10','10G'); hideFill('fill-s10-revo'); hideFill('fill-s10-cancel'); hideFill('fill-s10-atty')">Urine test – BCA pending (10G)</button>
+        <button class="pill" onclick="pick(this,'s10','10H'); showFill('fill-s10-atty'); hideFill('fill-s10-revo'); hideFill('fill-s10-cancel')">Review for IC merit first (10H)</button>
+        <button class="pill" onclick="pick(this,'s10','10I'); hideFill('fill-s10-revo'); hideFill('fill-s10-cancel'); hideFill('fill-s10-atty')">Not contesting IC (10I)</button>
+        <button class="pill" onclick="pick(this,'s10','10J'); hideFill('fill-s10-revo'); hideFill('fill-s10-cancel'); hideFill('fill-s10-atty')">Out-of-state license, fast track (10J)</button>
+      </div>
+      <div class="fill-block" id="fill-s10-revo">
+        <div class="fill-group">
+          <label class="fill-label">Revocation length</label>
+          <div class="pill-group">
+            <button class="pill" onclick="pickFill(this,'revo_length','90 days')">90 days</button>
+            <button class="pill" onclick="pickFill(this,'revo_length','6 months')">6 months</button>
+            <button class="pill" onclick="pickFill(this,'revo_length','1 year')">1 year</button>
+            <button class="pill" onclick="pickFill(this,'revo_length','2 years')">2 years</button>
+            <button class="pill" onclick="pickFill(this,'revo_length','6 years')">6 years</button>
+            <button class="pill" onclick="pickFill(this,'revo_length','10 years')">10 years</button>
+            <button class="pill" onclick="pickFill(this,'revo_length','lifetime')">Lifetime</button>
+          </div>
+          <input type="hidden" id="revo_length" />
+        </div>
+      </div>
+      <div class="fill-block" id="fill-s10-cancel">
+        <div class="fill-group">
+          <label class="fill-label">Cancellation length</label>
+          <div class="pill-group">
+            <button class="pill" onclick="pickFill(this,'cancel_length','90 days')">90 days</button>
+            <button class="pill" onclick="pickFill(this,'cancel_length','6 months')">6 months</button>
+            <button class="pill" onclick="pickFill(this,'cancel_length','1 year')">1 year</button>
+            <button class="pill" onclick="pickFill(this,'cancel_length','2 years')">2 years</button>
+            <button class="pill" onclick="pickFill(this,'cancel_length','6 years')">6 years</button>
+            <button class="pill" onclick="pickFill(this,'cancel_length','10 years')">10 years</button>
+            <button class="pill" onclick="pickFill(this,'cancel_length','lifetime')">Lifetime</button>
+          </div>
+          <input type="hidden" id="cancel_length" />
+        </div>
+      </div>
+      <div class="fill-block" id="fill-s10-atty">
+        <div class="fill-group">
+          <label class="fill-label">Additional fee amount (10H)</label>
+          <input class="form-input" id="ic_fee" placeholder="e.g. $1,500" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- §11 -->
+  <div class="section">
+    <div class="section-header"><span class="section-num">§11</span><span class="section-title">Out-of-state license holder?</span><span class="section-badge badge-if">If applicable</span></div>
+    <div class="section-body">
+      <div class="pill-group">
+        <button class="pill" onclick="pick(this,'s11','11')">Yes – include §11</button>
+        <button class="pill" onclick="pick(this,'s11','')">No – skip</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- §12 -->
+  <div class="section">
+    <div class="section-header"><span class="section-num">§12</span><span class="section-title">CDL driver?</span><span class="section-badge badge-if">If applicable</span></div>
+    <div class="section-body">
+      <div class="pill-group">
+        <button class="pill" onclick="pick(this,'s12','12A')">MN CDL (12A)</button>
+        <button class="pill" onclick="pick(this,'s12','12B')">Out-of-state CDL (12B)</button>
+        <button class="pill" onclick="pick(this,'s12','')">No CDL – skip</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- §13 -->
+  <div class="section">
+    <div class="section-header"><span class="section-num">§13</span><span class="section-title">Vehicle forfeiture notice</span><span class="section-badge badge-always">Always</span></div>
+    <div class="section-body">
+      <div class="pill-group">
+        <button class="pill" onclick="pick(this,'s13','13A')">Not received, not expected (13A)</button>
+        <button class="pill" onclick="pick(this,'s13','13B')">Not received, may receive (13B)</button>
+        <button class="pill" onclick="pick(this,'s13','13C')">Received, not yet provided to us (13C)</button>
+        <button class="pill" onclick="pick(this,'s13','13D')">Received and provided (13D)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- §14 -->
+  <div class="section">
+    <div class="section-header"><span class="section-num">§14</span><span class="section-title">Civil documents status</span><span class="section-badge badge-always">Always</span></div>
+    <div class="section-body">
+      <div class="pill-group">
+        <button class="pill" onclick="pick(this,'s14','14A')">Civil docs not yet received (14A)</button>
+        <button class="pill" onclick="pick(this,'s14','14B')">Civil docs already received (14B)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- §15 -->
+  <div class="section">
+    <div class="section-header"><span class="section-num">§15</span><span class="section-title">Probation / parole status</span><span class="section-badge badge-always">Always</span></div>
+    <div class="section-body">
+      <div class="pill-group">
+        <button class="pill" onclick="pick(this,'s15','15A'); hideFill('fill-s15')">Not on probation (15A)</button>
+        <button class="pill" onclick="pick(this,'s15','15B'); showFill('fill-s15')">On probation – not representing (15B)</button>
+        <button class="pill" onclick="pick(this,'s15','15C'); showFill('fill-s15')">On probation – representing (15C)</button>
+      </div>
+      <div class="fill-block" id="fill-s15">
+        <div class="fill-group">
+          <label class="fill-label">Offense, county, and year of probation</label>
+          <input class="form-input" id="probation_info" placeholder="e.g. DWI, Hennepin County, 2023" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- §16 -->
+  <div class="section">
+    <div class="section-header"><span class="section-num">§16</span><span class="section-title">Intake form / narrative</span><span class="section-badge badge-always">Always</span></div>
+    <div class="section-body">
+      <p class="multi-label">Select all that apply</p>
+      <div class="pill-group">
+        <button class="pill multi" onclick="toggleMulti(this,'s16a')">Long intake form already given (16A)</button>
+        <button class="pill multi" onclick="toggleMulti(this,'s16b')">Request narrative – met before (16B)</button>
+        <button class="pill multi" onclick="toggleMulti(this,'s16c')">Enclosing long intake form (16C)</button>
+        <button class="pill multi" onclick="toggleMulti(this,'s16d')">Request narrative – new (16D)</button>
+        <button class="pill multi" onclick="toggleMulti(this,'s16e')">Non-DWI case (16E)</button>
+      </div>
+      <input type="hidden" id="s16a" value="0"/>
+      <input type="hidden" id="s16b" value="0"/>
+      <input type="hidden" id="s16c" value="0"/>
+      <input type="hidden" id="s16d" value="0"/>
+      <input type="hidden" id="s16e" value="0"/>
+    </div>
+  </div>
+
+  <!-- §17 -->
+  <div class="section">
+    <div class="section-header"><span class="section-num">§17</span><span class="section-title">Retainer agreement</span><span class="section-badge badge-always">Always</span></div>
+    <div class="section-body">
+      <div class="pill-group">
+        <button class="pill" onclick="pick(this,'s17','17A')">Copy enclosed – signed at meeting (17A)</button>
+        <button class="pill" onclick="pick(this,'s17','17B')">Copy enclosed – fully signed (17B)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- §18 -->
+  <div class="section">
+    <div class="section-header"><span class="section-num">§18</span><span class="section-title">Payment method / status</span><span class="section-badge badge-always">Always</span></div>
+    <div class="section-body">
+      <div class="pill-group">
+        <button class="pill" onclick="pick(this,'s18','18A'); showFill('fill-s18'); setPayType('Credit card','Full')">CC – paid in full (18A)</button>
+        <button class="pill" onclick="pick(this,'s18','18B'); showFill('fill-s18'); setPayType('Credit card','Down payment')">CC – down payment (18B)</button>
+        <button class="pill" onclick="pick(this,'s18','18C'); showFill('fill-s18'); setPayType('Credit card','Auto payment plan')">CC – auto payment plan (18C)</button>
+        <button class="pill" onclick="pick(this,'s18','18D'); showFill('fill-s18'); setPayType('Cash/Check','Full')">Cash/Check – paid in full (18D)</button>
+        <button class="pill" onclick="pick(this,'s18','18E'); showFill('fill-s18'); setPayType('Cash/Check','Down payment')">Cash/Check – down payment (18E)</button>
+        <button class="pill" onclick="pick(this,'s18','18F'); showFill('fill-s18'); setPayType('Cash/Check','Payment plan')">Cash/Check – payment plan (18F)</button>
+      </div>
+      <div class="fill-block" id="fill-s18">
+        <div class="form-row">
+          <div class="fill-group">
+            <label class="fill-label">Amount paid</label>
+            <input class="form-input" id="pay_amount" placeholder="e.g. $3,500" />
+          </div>
+          <div class="fill-group">
+            <label class="fill-label">Payment method</label>
+            <input class="form-input" id="pay_method" placeholder="e.g. Credit card, Cash, Check" />
+          </div>
+        </div>
+        <div id="pay_plan_fields" style="display:none; margin-top:10px;">
+          <div class="form-row">
+            <div class="fill-group">
+              <label class="fill-label">Number of payments</label>
+              <input class="form-input" id="pay_count" placeholder="e.g. 3" />
+            </div>
+            <div class="fill-group">
+              <label class="fill-label">Payment frequency</label>
+              <input class="form-input" id="pay_freq" placeholder="e.g. monthly" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- §20 -->
+  <div class="section">
+    <div class="section-header"><span class="section-num">§20</span><span class="section-title">Chemical evaluation recommendation</span><span class="section-badge badge-always">Always</span></div>
+    <div class="section-body">
+      <div class="pill-group">
+        <button class="pill" onclick="pick(this,'s20','20A')">Recommend immediately – Lane Leipold (20A)</button>
+        <button class="pill" onclick="pick(this,'s20','20B')">May need later (20B)</button>
+        <button class="pill" onclick="pick(this,'s20','20C')">Out-of-state / one-day class (20C)</button>
+        <button class="pill" onclick="pick(this,'s20','20D')">Client already taking steps (20D)</button>
+        <button class="pill" onclick="pick(this,'s20','20E')">Spanish-speaking – Accurate Testing (20E)</button>
+        <button class="pill" onclick="pick(this,'s20','20F')">Recommend – Premier Chemical Assessments (20F)</button>
+        <button class="pill" onclick="pick(this,'s20','20G')">Recommend – Jan Aquilina (20G)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- §21 -->
+  <div class="section">
+    <div class="section-header"><span class="section-num">§21</span><span class="section-title">DWI with both IC and criminal charges?</span><span class="section-badge badge-if">If applicable</span></div>
+    <div class="section-body">
+      <div class="pill-group">
+        <button class="pill" onclick="pick(this,'s21','21')">Yes – include §21</button>
+        <button class="pill" onclick="pick(this,'s21','')">No – skip</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- §22 -->
+  <div class="section">
+    <div class="section-header"><span class="section-num">§22</span><span class="section-title">Closing paragraph</span><span class="section-badge badge-always">Always</span></div>
+    <div class="section-body">
+      <div class="pill-group">
+        <button class="pill" onclick="pick(this,'s22','22A')">New client (22A)</button>
+        <button class="pill" onclick="pick(this,'s22','22B')">Returning client (22B)</button>
+      </div>
+    </div>
+  </div>
+
+  <input type="hidden" id="s3" />
+  <input type="hidden" id="s4" />
+  <input type="hidden" id="s5" />
+  <input type="hidden" id="s6" />
+  <input type="hidden" id="s7" />
+  <input type="hidden" id="s8" />
+  <input type="hidden" id="s9" />
+  <input type="hidden" id="s10" />
+  <input type="hidden" id="s11" />
+  <input type="hidden" id="s12" />
+  <input type="hidden" id="s13" />
+  <input type="hidden" id="s14" />
+  <input type="hidden" id="s15" />
+  <input type="hidden" id="s17" />
+  <input type="hidden" id="s18" />
+  <input type="hidden" id="s20" />
+  <input type="hidden" id="s21" />
+  <input type="hidden" id="s22" />
+
+  <button class="generate-btn" onclick="generate()">Generate section codes + fill-ins</button>
+  <button class="reset-btn" onclick="resetAll()">Reset all</button>
+
+  <div class="output-box" id="output-box">
+    <div class="output-header">
+      <span class="output-label">Paste into Clio for assistant</span>
+      <button class="copy-btn" id="copy-btn" onclick="copyOutput()">Copy</button>
+    </div>
+    <div class="output-text" id="output-text"></div>
+  </div>
+
+</div>
+
+<script>
+  function pickFill(btn, id, value) {
+    const group = btn.closest('.pill-group');
+    group.querySelectorAll('.pill').forEach(p => p.classList.remove('selected'));
+    btn.classList.add('selected');
+    const hidden = document.getElementById(id);
+    if (hidden) hidden.value = value;
+  }
+
+  function pick(btn, id, code) {
+    const group = btn.closest('.pill-group');
+    group.querySelectorAll('.pill:not(.multi)').forEach(p => p.classList.remove('selected'));
+    btn.classList.add('selected');
+    const hidden = document.getElementById(id);
+    if (hidden) hidden.value = code;
+  }
+
+  function toggleMulti(btn, id) {
+    btn.classList.toggle('selected');
+    const hidden = document.getElementById(id);
+    if (hidden) hidden.value = btn.classList.contains('selected') ? '1' : '0';
+  }
+
+  function showFill(id) {
+    const el = document.getElementById(id);
+    if (el) el.classList.add('visible');
+  }
+
+  function hideFill(id) {
+    const el = document.getElementById(id);
+    if (el) el.classList.remove('visible');
+  }
+
+  function setPayType(method, type) {
+    const methodEl = document.getElementById('pay_method');
+    if (methodEl) methodEl.value = method;
+    const planFields = document.getElementById('pay_plan_fields');
+    if (planFields) planFields.style.display = (type === 'Auto payment plan' || type === 'Payment plan') ? 'block' : 'none';
+  }
+
+  function v(id) { const el = document.getElementById(id); return el ? el.value.trim() : ''; }
+
+  function line(code, note) {
+    return note ? code + ' (' + note + ')' : code;
+  }
+
+  function generate() {
+    const lines = [];
+
+    const pmm = v('pmm_note');
+    if (pmm) lines.push('PMM: ' + pmm);
+    lines.push('');
+    const s1 = v('s1'); if (s1) lines.push(s1);
+    lines.push('2');
+
+    const s3 = v('s3');
+    if (s3) {
+      const t = v('test_type');
+      lines.push(line(s3, t));
+    }
+
+    const s4 = v('s4');
+    if (s4) {
+      const t = v('add_test_type');
+      lines.push(line(s4, t ? 'Additional test: ' + t : ''));
+    }
+
+    const s5 = v('s5'); if (s5) lines.push(s5);
+
+    const s6 = v('s6');
+    if (s6) {
+      if (s6 === '6C' || s6 === '6D') {
+        const parts = [];
+        const at = v('appearance_type'), tm = v('appearance_time'), ch = v('courthouse'), ca = v('courthouse_addr'), cp = v('courthouse_phone');
+        if (at) parts.push(at);
+        if (tm) parts.push(tm);
+        if (ch) parts.push(ch);
+        if (ca) parts.push(ca);
+        if (cp) parts.push(cp);
+        lines.push(line(s6, parts.join(', ')));
+      } else {
+        lines.push(s6);
+      }
+    }
+
+    const s7 = v('s7');
+    if (s7) {
+      const d7a = v('appearance_date_7a'), d7b = v('appearance_date_7b');
+      const d = s7 === '7A' ? d7a : s7 === '7B' ? d7b : '';
+      lines.push(line(s7, d));
+    }
+
+    const s8 = v('s8');
+    if (s8) {
+      const c8d = s8 === '8D' ? v('conditions_8d') : '';
+      const c8e = s8 === '8E' ? v('conditions_8e') : '';
+      lines.push(line(s8, c8d || c8e));
+    }
+
+    const s9 = v('s9'); if (s9) lines.push(s9);
+
+    const s10 = v('s10');
+    if (s10) {
+      if (['10A','10B','10D','10E'].includes(s10)) {
+        const rl = v('revo_length');
+        lines.push(line(s10, rl));
+      } else if (s10 === '10C') {
+        const cl = v('cancel_length');
+        lines.push(line(s10, cl));
+      } else if (s10 === '10H') {
+        lines.push(line(s10, v('ic_fee')));
+      } else {
+        lines.push(s10);
+      }
+    }
+
+    const s11 = v('s11'); if (s11) lines.push(s11);
+    const s12 = v('s12'); if (s12) lines.push(s12);
+    const s13 = v('s13'); if (s13) lines.push(s13);
+    const s14 = v('s14'); if (s14) lines.push(s14);
+
+    const s15 = v('s15');
+    if (s15) {
+      const pi = s15 !== '15A' ? v('probation_info') : '';
+      lines.push(line(s15, pi));
+    }
+
+    if (v('s16a') === '1') lines.push('16A');
+    if (v('s16b') === '1') lines.push('16B');
+    if (v('s16c') === '1') lines.push('16C');
+    if (v('s16d') === '1') lines.push('16D');
+    if (v('s16e') === '1') lines.push('16E');
+
+    const s17 = v('s17'); if (s17) lines.push(s17);
+
+    const s18 = v('s18');
+    if (s18) {
+      const parts = [];
+      const amt = v('pay_amount'), meth = v('pay_method');
+      if (amt) parts.push(amt);
+      if (meth) parts.push('via ' + meth);
+      const cnt = v('pay_count'), freq = v('pay_freq');
+      if (cnt && freq) parts.push(cnt + ' payments ' + freq);
+      lines.push(line(s18, parts.join(' ')));
+    }
+
+    lines.push('19');
+
+    const s20 = v('s20'); if (s20) lines.push(s20);
+    const s21 = v('s21'); if (s21) lines.push(s21);
+    const s22 = v('s22'); if (s22) lines.push(s22);
+
+    if (lines.length <= 2) { alert('Please make selections before generating.'); return; }
+
+    document.getElementById('output-text').textContent = lines.join('\n');
+    document.getElementById('output-box').classList.add('visible');
+    document.getElementById('output-box').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+    function copyOutput() {
+    const text = document.getElementById('output-text').textContent;
+    if (!text) return;
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = document.getElementById('copy-btn');
+      btn.textContent = 'Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+    });
+  }
+
+  function resetAll() {
+    document.querySelectorAll('.pill').forEach(p => p.classList.remove('selected'));
+    document.querySelectorAll('.fill-block').forEach(b => b.classList.remove('visible'));
+    document.querySelectorAll('input.form-input, textarea.form-textarea').forEach(i => i.value = '');
+    const pmmEl = document.getElementById('pmm_note'); if (pmmEl) pmmEl.value = '';
+    document.getElementById('pay_plan_fields').style.display = 'none';
+    ['s1','s3','s4','s5','s6','s7','s8','s9','s10','s11','s12','s13','s14','s15','s17','s18','s20','s21','s22','revo_length','cancel_length'].forEach(id => {
+      const el = document.getElementById(id); if (el) el.value = '';
+    });
+    ['s16a','s16b','s16c','s16d','s16e'].forEach(id => {
+      const el = document.getElementById(id); if (el) el.value = '0';
+    });
+    document.getElementById('output-box').classList.remove('visible');
+    document.getElementById('output-text').textContent = '';
+  }
+</script>
+</body>
+</html>
